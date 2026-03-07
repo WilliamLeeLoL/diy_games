@@ -1,0 +1,457 @@
+:root {
+  --bg-a: #f7fbff;
+  --bg-b: #e1efff;
+  --panel: #ffffffcc;
+  --ink: #1f2937;
+  --accent: #0f766e;
+  --accent-soft: #5eead4;
+  --danger: #dc2626;
+  --water-top: #67e8f9;
+  --water-bottom: #0891b2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 20% 10%, #fff, var(--bg-a) 35%, var(--bg-b));
+}
+
+.game-shell {
+  width: min(960px, 92vw);
+  margin: 1.5rem auto 2rem;
+  padding: 1.2rem;
+  border-radius: 24px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 45px #0f172a22;
+}
+
+.game-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+}
+
+.game-header p {
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 3.2em;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid #9ca3af;
+  border-radius: 0.45rem;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.arena {
+  position: relative;
+  margin-top: 1.2rem;
+  height: 500px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #eff6ff, #dbeafe 80%);
+  overflow: hidden;
+}
+
+.faucet-zone {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 320px;
+  transform: translateX(-50%);
+}
+
+.faucet {
+  position: relative;
+  width: 240px;
+  height: 36px;
+  margin: 0 auto;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #9ca3af, #d1d5db);
+}
+
+.faucet-neck {
+  position: absolute;
+  left: 36px;
+  bottom: 30px;
+  width: 34px;
+  height: 95px;
+  border-radius: 17px 17px 0 0;
+  background: linear-gradient(180deg, #9ca3af, #6b7280);
+}
+
+.faucet-mouth {
+  position: absolute;
+  right: 26px;
+  top: 20px;
+  width: 34px;
+  height: 24px;
+  border-radius: 0 0 14px 14px;
+  background: #9ca3af;
+}
+
+.faucet::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: -24px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #9ca3af;
+  box-shadow: 0 0 0 8px #d1d5db;
+}
+
+.faucet.open::after {
+  background: var(--accent);
+  box-shadow: 0 0 0 8px #99f6e4;
+}
+
+.water-stream {
+  position: absolute;
+  top: 56px;
+  right: 60px;
+  width: 18px;
+  height: 295px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--water-top), var(--water-bottom));
+  transform-origin: top;
+  transform: scaleY(0);
+  opacity: 0;
+}
+
+.water-stream.running {
+  opacity: 0.95;
+  transform: scaleY(1);
+  animation: streamPulse 0.32s linear infinite alternate;
+}
+
+@keyframes streamPulse {
+  from { filter: brightness(0.95); }
+  to { filter: brightness(1.2); }
+}
+
+.cup-zone {
+  position: absolute;
+  inset: auto 0 20px;
+  display: grid;
+  place-items: center;
+}
+
+.cup {
+  position: relative;
+  width: 245px;
+  height: 270px;
+  border: 8px solid #64748b;
+  border-top: 0;
+  border-radius: 0 0 30px 30px;
+  background: linear-gradient(180deg, #ffffff95, #dbeafe66);
+  overflow: hidden;
+}
+
+.water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  background: linear-gradient(180deg, var(--water-top), var(--water-bottom));
+  transition: height 120ms linear;
+  overflow: hidden;
+}
+
+.water::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-top: 3px solid #cffafe;
+}
+
+.overflow {
+  width: 380px;
+  height: 44px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #67e8f9, #22d3ee);
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.overflow.show {
+  opacity: 0.95;
+  transform: scaleX(1);
+  animation: splash 0.45s ease-out 2;
+}
+
+@keyframes splash {
+  0% { transform: scaleX(0.2) scaleY(0.5); }
+  100% { transform: scaleX(1) scaleY(1); }
+}
+
+.cup.shake {
+  animation: shake 0.42s ease-in-out 3;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.dashboard {
+  margin-top: 1rem;
+}
+
+.participant-panel {
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.participant-panel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.participant-controls {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.participant-controls select {
+  min-width: 132px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+#clearPlayersBtn {
+  background: linear-gradient(90deg, #64748b, #475569);
+}
+
+.participant-tip {
+  margin: 0.6rem 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.player-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.player-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.player-list .remove-player-btn {
+  background: #ef4444;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.quick-stats p {
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.58rem 0.95rem;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(90deg, var(--accent), #0ea5a2);
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+#restartBtn,
+#modalRestartBtn {
+  background: linear-gradient(90deg, #ea580c, #f97316);
+}
+
+.result-table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.result-table th,
+.result-table td {
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.result-table tr.fail {
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.log-panel {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.log-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+#actionLog {
+  margin: 0;
+  padding-left: 1.1rem;
+  max-height: 132px;
+  overflow: auto;
+}
+
+#actionLog li {
+  margin-bottom: 0.28rem;
+}
+
+.failure-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #11182788;
+}
+
+.failure-modal.hidden {
+  display: none;
+}
+
+.failure-card {
+  width: min(420px, 90vw);
+  background: white;
+  border-radius: 16px;
+  padding: 1.2rem;
+  text-align: center;
+  box-shadow: 0 20px 40px #1118273d;
+}
+
+.failure-card h2 {
+  margin: 0;
+  color: var(--danger);
+}
+
+@media (max-width: 720px) {
+  .arena {
+    height: 420px;
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .participant-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .participant-controls select {
+    width: 100%;
+  }
+
+  .faucet-zone {
+    width: 260px;
+  }
+
+  .faucet {
+    width: 200px;
+    height: 30px;
+  }
+
+  .faucet-neck {
+    left: 32px;
+    width: 28px;
+    height: 82px;
+  }
+
+  .faucet-mouth {
+    right: 22px;
+    top: 16px;
+    width: 28px;
+    height: 20px;
+  }
+
+  .water-stream {
+    top: 48px;
+    right: 50px;
+    width: 15px;
+    height: 250px;
+  }
+
+  .cup {
+    width: 210px;
+    height: 230px;
+    border-width: 7px;
+  }
+
+  .overflow {
+    width: 320px;
+    height: 40px;
+  }
+
+  .result-table {
+    font-size: 0.88rem;
+  }
+}

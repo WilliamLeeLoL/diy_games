@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>接水小游戏</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <h1>接水小游戏</h1>
+      <p>先在下方选择并添加参赛人；按住 <kbd>Space</kbd> 持续放水，松开即停止，轮流按键，水溢出杯口者失败。</p>
+    </header>
+
+    <section class="arena">
+      <div class="faucet-zone">
+        <div class="faucet" id="faucet" aria-hidden="true">
+          <span class="faucet-neck"></span>
+          <span class="faucet-mouth"></span>
+        </div>
+        <div class="water-stream" id="stream" aria-hidden="true"></div>
+      </div>
+
+      <div class="cup-zone">
+        <div class="cup" id="cup" aria-label="玻璃杯">
+          <div class="water" id="water"></div>
+        </div>
+        <div class="overflow" id="overflow" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <div class="participant-panel">
+        <h2>参赛人设置</h2>
+        <div class="participant-controls">
+          <select id="candidatePlayer" aria-label="选择参赛人">
+            <option value="宝贝">宝贝</option>
+            <option value="爸爸">爸爸</option>
+            <option value="妈妈">妈妈</option>
+            <option value="爷爷">爷爷</option>
+            <option value="奶奶">奶奶</option>
+            <option value="哥哥">哥哥</option>
+            <option value="姐姐">姐姐</option>
+            <option value="小明">小明</option>
+            <option value="小红">小红</option>
+          </select>
+          <button id="addPlayerBtn" type="button">添加参赛人</button>
+          <button id="clearPlayersBtn" type="button">清空名单</button>
+        </div>
+        <p class="participant-tip">至少需要 2 名参赛人才能开始。</p>
+        <ul id="playerList" class="player-list"></ul>
+      </div>
+
+      <div class="quick-stats">
+        <p>当前按键选手：<strong id="currentPlayer">请先添加参赛人</strong></p>
+        <p>水龙头状态：<strong id="flowStatus">关闭</strong></p>
+      </div>
+
+      <div class="controls">
+        <button id="toggleBtn" type="button">按住放水</button>
+        <button id="restartBtn" type="button">重新开始</button>
+      </div>
+
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>选手</th>
+            <th>累计失败局数</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+
+      <div class="log-panel">
+        <h2>操作记录</h2>
+        <ul id="actionLog"></ul>
+      </div>
+    </section>
+  </main>
+
+  <div class="failure-modal hidden" id="failureModal" role="dialog" aria-modal="true" aria-labelledby="failureTitle">
+    <div class="failure-card">
+      <h2 id="failureTitle">水溢出来了</h2>
+      <p><strong id="failedPlayerName">-</strong> 触发溢出，判定失败。</p>
+      <button id="modalRestartBtn" type="button">再来一局</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
