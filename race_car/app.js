@@ -484,6 +484,10 @@
     for (let index = visibleSegments.length - 1; index >= 0; index -= 1) {
       const segment = visibleSegments[index];
       drawRoadSegment(segment, track, index);
+    }
+
+    for (let index = visibleSegments.length - 1; index >= 0; index -= 1) {
+      const segment = visibleSegments[index];
       drawRoadObjects(segment, track, visibleCars.get(segment.index) || [], playerPosition);
     }
   }
@@ -584,6 +588,11 @@
     const p2 = segment.p2.screen;
     const theme = track.theme;
 
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, segment.clip);
+    ctx.clip();
+
     segment.obstacles.forEach((obstacle) => {
       const percent = 0.5;
       const roadWidth = interpolate(p1.w, p2.w, percent);
@@ -636,6 +645,8 @@
     if (playerPosition > track.finishDistance - ROAD.segmentLength * 14 && segment.index === track.finishSegmentIndex) {
       ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
     }
+
+    ctx.restore();
   }
 
   function drawPlayerCar(player, theme, timestamp) {
@@ -1386,12 +1397,15 @@
   }
 
   function drawObstacle(obstacle, x, y, width, height, theme) {
-    if (width < 3) {
+    if (width < 1.25) {
       return;
     }
 
+    const alpha = clamp((width - 1.25) / 4, 0.35, 1);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
     if (obstacle.type === "puddle") {
-      ctx.save();
       ctx.translate(x, y);
       ctx.fillStyle = theme.puddleShade;
       ctx.beginPath();
@@ -1409,7 +1423,6 @@
       return;
     }
 
-    ctx.save();
     ctx.translate(x, y - height * 0.08);
     ctx.fillStyle = theme.boxShade;
     ctx.beginPath();
