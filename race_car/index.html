@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>地平线冲刺</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header class="hero">
+        <p class="eyebrow">DIY GAMES / RACE CAR</p>
+        <div>
+          <h1>地平线冲刺</h1>
+          <p class="hero-copy">俯视角伪 3D 网页赛车原型，支持电脑竞速和 90 秒轮流挑战。</p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="control-panel">
+          <div class="panel-card">
+            <p class="section-label">模式</p>
+            <div class="mode-switch">
+              <button class="mode-button is-active" data-mode="race" type="button">电脑竞速</button>
+              <button class="mode-button" data-mode="time" type="button">90 秒挑战</button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <p class="section-label">赛道环境</p>
+            <div class="track-grid">
+              <button class="track-card is-active" data-track="desert" type="button">
+                <span class="track-card-title">沙漠</span>
+                <span class="track-card-copy">长直道、热浪和起伏沙丘</span>
+              </button>
+              <button class="track-card" data-track="jungle" type="button">
+                <span class="track-card-title">丛林</span>
+                <span class="track-card-copy">多弯道、潮湿地面和密集障碍</span>
+              </button>
+              <button class="track-card" data-track="highway" type="button">
+                <span class="track-card-title">公路</span>
+                <span class="track-card-copy">高速路感、宽车道和稳定坡度</span>
+              </button>
+              <button class="track-card" data-track="mountain" type="button">
+                <span class="track-card-title">山路</span>
+                <span class="track-card-copy">连续发卡弯和更陡的高低落差</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card mode-config" data-config="race">
+            <p class="section-label">竞速设置</p>
+            <label class="field">
+              <span>玩家名字</span>
+              <input id="race-player-name" type="text" value="玩家一" maxlength="20">
+            </label>
+            <label class="field">
+              <span>电脑数量</span>
+              <input id="ai-count" type="range" min="2" max="6" value="4">
+              <strong id="ai-count-value">4 名电脑</strong>
+            </label>
+          </div>
+
+          <div class="panel-card mode-config is-hidden" data-config="time">
+            <p class="section-label">挑战设置</p>
+            <label class="field">
+              <span>玩家名单</span>
+              <textarea id="player-names" rows="5" placeholder="每行一个名字">爸爸
+妈妈
+宝贝</textarea>
+            </label>
+            <p class="field-hint">90 秒倒计时结束后，按每位玩家的最远距离排名。</p>
+          </div>
+
+          <div class="panel-card actions-card">
+            <button id="start-button" class="primary-button" type="button">开始比赛</button>
+            <button id="reset-button" class="secondary-button is-hidden" type="button">返回设置</button>
+            <p id="status-message" class="status-message">选择模式和赛道后开始。</p>
+          </div>
+
+          <div class="panel-card hud-card">
+            <p class="section-label">实时数据</p>
+            <dl class="hud-list">
+              <div>
+                <dt>模式</dt>
+                <dd id="hud-mode">电脑竞速</dd>
+              </div>
+              <div>
+                <dt>赛道</dt>
+                <dd id="hud-track">沙漠</dd>
+              </div>
+              <div>
+                <dt>速度</dt>
+                <dd id="hud-speed">0 km/h</dd>
+              </div>
+              <div>
+                <dt>距离</dt>
+                <dd id="hud-distance">0 m</dd>
+              </div>
+              <div>
+                <dt>排名</dt>
+                <dd id="hud-rank">-</dd>
+              </div>
+              <div>
+                <dt>计时</dt>
+                <dd id="hud-timer">90.0 s</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="panel-card help-card">
+            <p class="section-label">操作</p>
+            <p>↑ 加速</p>
+            <p>↓ 减速，减到 0 后继续按会倒车</p>
+            <p>← → 转向</p>
+            <p>水坑会打滑旋转，箱子会把速度清零并弹开。</p>
+          </div>
+        </section>
+
+        <section class="stage-panel">
+          <canvas id="game-canvas" width="1280" height="720" aria-label="赛车游戏画布"></canvas>
+
+          <div class="canvas-overlay">
+            <div class="overlay-chip">
+              <span id="overlay-title">等待发车</span>
+              <small id="overlay-subtitle">设置完成后点击开始比赛。</small>
+            </div>
+          </div>
+
+          <aside id="results-panel" class="results-panel is-hidden">
+            <h2 id="results-title">比赛结果</h2>
+            <ol id="results-list"></ol>
+            <button id="results-action" class="primary-button" type="button">继续</button>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
