@@ -53,6 +53,20 @@
     centrifugal: 0.0024,
   };
 
+  const LANE_WORLD_WIDTH = 2 / ROAD.lanes;
+  const OBSTACLE_SPECS = {
+    puddle: {
+      laneCoverage: 0.86,
+      hitHalfWidth: LANE_WORLD_WIDTH * 0.43,
+      heightRatio: 0.38,
+    },
+    box: {
+      laneCoverage: 0.7,
+      hitHalfWidth: LANE_WORLD_WIDTH * 0.35,
+      heightRatio: 0.72,
+    },
+  };
+
   const MAX_KPH = 320;
   const METERS_PER_UNIT = MAX_KPH / 3.6 / PHYSICS.maxSpeed;
   const KPH_PER_UNIT = MAX_KPH / PHYSICS.maxSpeed;
@@ -573,11 +587,13 @@
     segment.obstacles.forEach((obstacle) => {
       const percent = 0.5;
       const roadWidth = interpolate(p1.w, p2.w, percent);
+      const laneScreenWidth = (roadWidth * 2) / ROAD.lanes;
+      const spec = OBSTACLE_SPECS[obstacle.type];
       const x = interpolate(p1.x, p2.x, percent) + roadWidth * obstacle.offset;
       const y = interpolate(p1.y, p2.y, percent);
-      const scale = roadWidth / ROAD.roadWidth;
-      const size = obstacle.type === "puddle" ? 120 : 96;
-      drawObstacle(obstacle, x, y, size * scale, theme);
+      const width = laneScreenWidth * spec.laneCoverage;
+      const height = width * spec.heightRatio;
+      drawObstacle(obstacle, x, y, width, height, theme);
     });
 
     carsOnSegment.forEach((car) => {
@@ -865,7 +881,7 @@
     const collisionZ = isPlayer ? vehicle.coursePosition + ROAD.playerZ : vehicle.coursePosition;
     const segment = findSegment(state.track, collisionZ);
     for (const obstacle of segment.obstacles) {
-      const hitWidth = obstacle.type === "puddle" ? 0.18 : 0.14;
+      const hitWidth = OBSTACLE_SPECS[obstacle.type].hitHalfWidth;
       if (Math.abs(vehicle.x - obstacle.offset) < hitWidth + vehicle.width) {
         vehicle.collisionCooldown = obstacle.type === "puddle" ? 0.72 : 0.56;
         if (obstacle.type === "puddle") {
@@ -1192,24 +1208,27 @@
   function placeObstacles(track) {
     const theme = track.theme;
     const rng = createRandom(`${track.key}-obstacles`);
-    const offsets = [-0.78, -0.52, -0.16, 0.18, 0.5, 0.8];
+    const laneIndexes = Array.from({ length: ROAD.lanes }, (_, index) => index);
     let segmentIndex = 60;
 
     while (segmentIndex < track.segments.length - 26) {
       const type = rng() < theme.puddleBias ? "puddle" : "box";
       const segment = track.segments[segmentIndex];
-      const offset = offsets[Math.floor(rng() * offsets.length)];
+      const laneIndex = laneIndexes[Math.floor(rng() * laneIndexes.length)];
       segment.obstacles.push({
         type,
-        offset,
+        laneIndex,
+        offset: getLaneCenter(laneIndex),
       });
 
       if (rng() > 0.72) {
         const extraIndex = Math.min(track.segments.length - 28, segmentIndex + 4 + Math.floor(rng() * 8));
         const extraSegment = track.segments[extraIndex];
+        const extraLaneIndex = laneIndexes[Math.floor(rng() * laneIndexes.length)];
         extraSegment.obstacles.push({
           type: rng() < 0.5 ? "puddle" : "box",
-          offset: offsets[Math.floor(rng() * offsets.length)],
+          laneIndex: extraLaneIndex,
+          offset: getLaneCenter(extraLaneIndex),
         });
       }
 
@@ -1366,8 +1385,8 @@
     }
   }
 
-  function drawObstacle(obstacle, x, y, size, theme) {
-    if (size < 2) {
+  function drawObstacle(obstacle, x, y, width, height, theme) {
+    if (width < 3) {
       return;
     }
 
@@ -1376,46 +1395,46 @@
       ctx.translate(x, y);
       ctx.fillStyle = theme.puddleShade;
       ctx.beginPath();
-      ctx.ellipse(0, 0, size * 0.72, size * 0.38, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, width * 0.56, height * 0.58, -0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = theme.puddle;
       ctx.beginPath();
-      ctx.ellipse(-size * 0.06, -size * 0.02, size * 0.58, size * 0.3, -0.15, 0, Math.PI * 2);
+      ctx.ellipse(-width * 0.04, -height * 0.04, width * 0.46, height * 0.44, -0.15, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "rgba(255, 255, 255, 0.28)";
       ctx.beginPath();
-      ctx.ellipse(-size * 0.16, -size * 0.08, size * 0.22, size * 0.08, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(-width * 0.14, -height * 0.16, width * 0.18, height * 0.14, -0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
       return;
     }
 
     ctx.save();
-    ctx.translate(x, y - size * 0.1);
+    ctx.translate(x, y - height * 0.08);
     ctx.fillStyle = theme.boxShade;
     ctx.beginPath();
-    ctx.moveTo(-size * 0.34, size * 0.16);
-    ctx.lineTo(0, size * 0.36);
-    ctx.lineTo(size * 0.34, size * 0.16);
-    ctx.lineTo(0, -size * 0.03);
+    ctx.moveTo(-width * 0.5, height * 0.18);
+    ctx.lineTo(0, height * 0.42);
+    ctx.lineTo(width * 0.5, height * 0.18);
+    ctx.lineTo(0, -height * 0.04);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = theme.box;
     ctx.beginPath();
-    ctx.moveTo(-size * 0.34, size * 0.16);
-    ctx.lineTo(-size * 0.34, -size * 0.2);
-    ctx.lineTo(0, -size * 0.4);
-    ctx.lineTo(0, -size * 0.03);
+    ctx.moveTo(-width * 0.5, height * 0.18);
+    ctx.lineTo(-width * 0.5, -height * 0.32);
+    ctx.lineTo(0, -height * 0.56);
+    ctx.lineTo(0, -height * 0.04);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = shadeColor(theme.box, 16);
     ctx.beginPath();
-    ctx.moveTo(0, -size * 0.03);
-    ctx.lineTo(0, -size * 0.4);
-    ctx.lineTo(size * 0.34, -size * 0.2);
-    ctx.lineTo(size * 0.34, size * 0.16);
+    ctx.moveTo(0, -height * 0.04);
+    ctx.lineTo(0, -height * 0.56);
+    ctx.lineTo(width * 0.5, -height * 0.32);
+    ctx.lineTo(width * 0.5, height * 0.18);
     ctx.closePath();
     ctx.fill();
     ctx.restore();
@@ -1739,6 +1758,10 @@
       return Math.min(value + amount, target);
     }
     return Math.max(value - amount, target);
+  }
+
+  function getLaneCenter(laneIndex) {
+    return -1 + LANE_WORLD_WIDTH * (laneIndex + 0.5);
   }
 
   function roundedRectPath(context, x, y, width, height, radius) {
