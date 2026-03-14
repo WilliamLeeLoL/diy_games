@@ -1663,8 +1663,8 @@
     point.camera.y = point.world.y - cameraY;
     point.camera.z = point.world.z - cameraZ;
     point.screen.scale = ROAD.cameraDepth / point.camera.z;
-    point.screen.x = Math.round(canvas.width / 2 + point.screen.scale * point.camera.x * canvas.width / 2 / ROAD.roadWidth);
-    point.screen.y = Math.round(canvas.height / 2 - point.screen.scale * point.camera.y * canvas.height / 2 / ROAD.cameraHeight);
+    point.screen.x = Math.round(canvas.width / 2 + point.screen.scale * point.camera.x * canvas.width / 2);
+    point.screen.y = Math.round(canvas.height / 2 - point.screen.scale * point.camera.y * canvas.height / 2);
     point.screen.w = Math.round(point.screen.scale * ROAD.roadWidth * canvas.width / 2);
   }
 
