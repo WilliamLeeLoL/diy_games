@@ -190,6 +190,21 @@
     },
   };
 
+  const CAR_ASSET_VERSION = "20260314-3";
+  const AUDIO_ASSET_VERSION = "20260314-1";
+  const CAR_SPRITE_SOURCES = {
+    red: `assets/car_red_1.png?v=${CAR_ASSET_VERSION}`,
+    blue: `assets/car_blue_1.png?v=${CAR_ASSET_VERSION}`,
+    green: `assets/car_green_1.png?v=${CAR_ASSET_VERSION}`,
+    yellow: `assets/car_yellow_1.png?v=${CAR_ASSET_VERSION}`,
+  };
+  const BGM_TRACK = {
+    src: `assets/bgm_bouncer_cc0.mp3?v=${AUDIO_ASSET_VERSION}`,
+    volume: 0.2,
+  };
+  const CAR_SPRITES = loadCarSprites();
+  const AI_SPRITE_KEYS = ["blue", "green", "yellow", "red"];
+
   const CAR_PALETTE = [
     { body: "#db4e32", stripe: "#ffd166", glass: "#d8eff8" },
     { body: "#327dd2", stripe: "#ffffff", glass: "#c8eff7" },
@@ -343,6 +358,7 @@
     if (state.phase === "idle") {
       state.previewPosition = increase(state.previewPosition, state.track.theme.previewSpeed * deltaTime, state.track.length);
       state.audio.setEngine(0, false);
+      state.audio.setMusic(false);
       syncHud();
       return;
     }
@@ -378,12 +394,14 @@
       }
 
       state.audio.setEngine(0, true);
+      state.audio.setMusic(false);
       syncHud();
       return;
     }
 
     if (state.phase !== "playing") {
       state.audio.setEngine(0, false);
+      state.audio.setMusic(false);
       syncHud();
       return;
     }
@@ -402,7 +420,9 @@
     }
 
     syncHud();
-    state.audio.setEngine(session.player.speed, true);
+    const isStillPlaying = state.phase === "playing";
+    state.audio.setEngine(isStillPlaying ? session.player.speed : 0, isStillPlaying);
+    state.audio.setMusic(isStillPlaying);
   }
 
   function render(timestamp) {
@@ -656,6 +676,12 @@
     const tilt = player.spinTimer > 0
       ? player.spinDirection * (1 - player.spinTimer / player.spinDuration) * Math.PI * 2
       : player.steerVisual * 0.32;
+    const playerSprite = CAR_SPRITES.red;
+
+    if (isSpriteReady(playerSprite)) {
+      drawCarSprite(playerSprite, baseX + bounceOffset, baseY - 4, tilt, 108, 200, 1);
+      return;
+    }
 
     const carWidth = 118;
     const carHeight = 164;
@@ -1110,6 +1136,7 @@
         startDelay: index * 0.08,
         baseSpeed: theme.aiSpeedMin + rng() * (theme.aiSpeedMax - theme.aiSpeedMin),
         palette,
+        spriteKey: AI_SPRITE_KEYS[index % AI_SPRITE_KEYS.length],
       };
     });
   }
@@ -1460,6 +1487,12 @@
 
     const width = 92 * scale;
     const height = 126 * scale;
+    const sprite = CAR_SPRITES[car.spriteKey];
+
+    if (isSpriteReady(sprite)) {
+      drawCarSprite(sprite, x, y - height * 0.08, (car.targetX - car.x) * 0.15, width * 1.05, width * 1.05 * (131 / 71), 0.96);
+      return;
+    }
 
     ctx.save();
     ctx.translate(x, y - height * 0.42);
@@ -1773,6 +1806,21 @@
     return Math.max(value - amount, target);
   }
 
+  function drawCarSprite(image, x, y, rotation, width, height, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.beginPath();
+    ctx.ellipse(0, height * 0.18, width * 0.34, height * 0.12, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.drawImage(image, -width / 2, -height / 2, width, height);
+    ctx.restore();
+  }
+
   function getLaneCenter(laneIndex) {
     return -1 + LANE_WORLD_WIDTH * (laneIndex + 0.5);
   }
@@ -1827,6 +1875,22 @@
     };
   }
 
+  function loadCarSprites() {
+    const sprites = {};
+    Object.entries(CAR_SPRITE_SOURCES).forEach(([key, src]) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.loading = "eager";
+      image.src = src;
+      sprites[key] = image;
+    });
+    return sprites;
+  }
+
+  function isSpriteReady(image) {
+    return Boolean(image && image.complete && image.naturalWidth > 0);
+  }
+
   function hexToRgb(color) {
     if (!color.startsWith("#")) {
       return null;
@@ -1870,9 +1934,13 @@
     this.engineGainA = null;
     this.engineGainB = null;
     this.noiseBuffer = null;
+    this.musicElement = null;
+    this.musicActive = false;
   }
 
   AudioEngine.prototype.unlock = function unlock() {
+    this.ensureMusicElement();
+
     if (this.context) {
       this.context.resume();
       return;
@@ -1908,6 +1976,17 @@
     this.createNoiseBuffer();
   };
 
+  AudioEngine.prototype.ensureMusicElement = function ensureMusicElement() {
+    if (this.musicElement || typeof Audio === "undefined") {
+      return;
+    }
+
+    this.musicElement = new Audio(BGM_TRACK.src);
+    this.musicElement.loop = true;
+    this.musicElement.preload = "auto";
+    this.musicElement.volume = BGM_TRACK.volume;
+  };
+
   AudioEngine.prototype.createNoiseBuffer = function createNoiseBuffer() {
     if (!this.context) {
       return;
@@ -1936,6 +2015,45 @@
     this.engineOscB.frequency.setTargetAtTime(baseFrequency * 0.5, now, 0.08);
     this.engineGainA.gain.setTargetAtTime(gainA, now, 0.08);
     this.engineGainB.gain.setTargetAtTime(gainB, now, 0.08);
+  };
+
+  AudioEngine.prototype.setMusic = function setMusic(active) {
+    if (this.musicActive === active) {
+      return;
+    }
+
+    this.musicActive = active;
+    this.ensureMusicElement();
+
+    if (!this.musicElement) {
+      return;
+    }
+
+    if (active) {
+      this.musicElement.volume = BGM_TRACK.volume;
+
+      try {
+        this.musicElement.currentTime = 0;
+      } catch (error) {
+        // Ignore seek errors while metadata is still loading.
+      }
+
+      const playPromise = this.musicElement.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          this.musicActive = false;
+        });
+      }
+      return;
+    }
+
+    this.musicElement.pause();
+
+    try {
+      this.musicElement.currentTime = 0;
+    } catch (error) {
+      // Ignore seek errors while the browser finalizes the pause.
+    }
   };
 
   AudioEngine.prototype.beep = function beep(frequency, duration, type, volume, offset) {
