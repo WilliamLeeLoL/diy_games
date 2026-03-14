@@ -1665,7 +1665,7 @@
     point.screen.scale = ROAD.cameraDepth / point.camera.z;
     point.screen.x = Math.round(canvas.width / 2 + point.screen.scale * point.camera.x * canvas.width / 2 / ROAD.roadWidth);
     point.screen.y = Math.round(canvas.height / 2 - point.screen.scale * point.camera.y * canvas.height / 2 / ROAD.cameraHeight);
-    point.screen.w = Math.round(point.screen.scale * ROAD.roadWidth * canvas.width / 2 / ROAD.roadWidth);
+    point.screen.w = Math.round(point.screen.scale * ROAD.roadWidth * canvas.width / 2);
   }
 
   function drawQuad(x1, y1, x2, y2, x3, y3, x4, y4, color) {
